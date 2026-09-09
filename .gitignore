@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+*.pyc
+*.pkl
+data/
+recordings/
+.env
+.pytest_cache/
+.DS_Store
+*.egg-info/
+*.log
+
+# Exclude the upstream keyteleop dependency; install it separately per README.
+third_party/lerobot_ur5e_keyteleop/
