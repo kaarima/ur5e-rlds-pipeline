@@ -20,54 +20,11 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Create virtual environment
-        run: python -m venv venv
-
-      - name: Fetch keyteleop dependency
-        run: git clone --depth 1 https://github.com/scy-v/lerobot_ur5e_keyteleop.git third_party/lerobot_ur5e_keyteleop
-
-      - name: Run smoke test
-        run: ./scripts/test_wrapper_smoke.shname: Smoke test
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  smoke:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Setup Python 3.10
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Create venv
-        run: |
-          python -m venv venv
-          . venv/bin/activate
-          python -m pip install --upgrade pip
-
-      - name: Clone dependencies
+      - name: Fetch required source trees
         run: |
           mkdir -p third_party
-          git clone https://github.com/huggingface/lerobot.git third_party/lerobot
-          git clone https://github.com/scy-v/lerobot_ur5e_keyteleop.git third_party/lerobot_ur5e_keyteleop
+          git clone --depth 1 --branch v0.4.0 --single-branch https://github.com/huggingface/lerobot.git third_party/lerobot
+          git clone --depth 1 https://github.com/scy-v/lerobot_ur5e_keyteleop.git third_party/lerobot_ur5e_keyteleop
 
-      - name: Install editable local packages (no deps)
-        run: |
-          . venv/bin/activate
-          pip install -e third_party/lerobot --no-deps
-          pip install -e third_party/lerobot_ur5e_keyteleop/lerobot_robot_ur5e --no-deps
-          pip install -e third_party/lerobot_ur5e_keyteleop/lerobot_teleoperator_ur5e --no-deps
-
-      - name: Run wrapper smoke test
-        run: |
-          . venv/bin/activate
-          chmod +x scripts/test_wrapper_smoke.sh
-          ./scripts/test_wrapper_smoke.sh
+      - name: Run static smoke test
+        run: ./scripts/test_wrapper_smoke.sh

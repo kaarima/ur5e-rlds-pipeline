@@ -9,7 +9,7 @@ set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-PYTHONPATH="$PROJECT_ROOT/third_party/lerobot_ur5e_keyteleop/scripts:$PROJECT_ROOT/third_party/lerobot_ur5e_keyteleop/lerobot_robot_ur5e/lerobot_robot_ur5e:$PROJECT_ROOT/third_party/lerobot_ur5e_keyteleop/lerobot_teleoperator_ur5e/lerobot_teleoperator_ur5e"
+PYTHONPATH="$PROJECT_ROOT/third_party/lerobot/src:$PROJECT_ROOT/third_party/lerobot_ur5e_keyteleop/scripts:$PROJECT_ROOT/third_party/lerobot_ur5e_keyteleop/lerobot_robot_ur5e:$PROJECT_ROOT/third_party/lerobot_ur5e_keyteleop/lerobot_teleoperator_ur5e"
 export PYTHONPATH
 
 exec "$PROJECT_ROOT/venv/bin/ur5e-record" "$@"

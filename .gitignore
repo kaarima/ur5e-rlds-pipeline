@@ -10,5 +10,6 @@ recordings/
 *.egg-info/
 *.log
 
-# Exclude the upstream keyteleop dependency; install it separately per README.
+# Exclude third-party checkouts; install dependencies separately per README.
+third_party/
 third_party/lerobot_ur5e_keyteleop/
