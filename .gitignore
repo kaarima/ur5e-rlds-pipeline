@@ -1,15 +1,18 @@
+# Python environment
 venv/
 __pycache__/
 *.pyc
-*.pkl
-data/
-recordings/
-.env
-.pytest_cache/
-.DS_Store
-*.egg-info/
-*.log
 
-# Exclude third-party checkouts; install dependencies separately per README.
-third_party/
+# Cloned third-party repos (not your code — cloned via git clone in setup steps)
+third_party/lerobot/
 third_party/lerobot_ur5e_keyteleop/
+third_party/ur5e_model/
+
+# Recorded datasets (large video files — don't belong in git)
+# If you DO want to track dataset metadata, remove this line and add
+# more specific ignores instead (e.g. just videos/*.mp4)
+recorded_data/
+
+# OS/editor cruft
+.DS_Store
+*.swp
