@@ -1,99 +1,99 @@
-# UR5e RTDE Smoke Test
+# UR5e RLDS Pipeline
 
-This project verifies that Python can read state from URSim over RTDE before
-building the demonstration-recording pipeline.
+Collects teleoperated demonstrations from a simulated UR5e robot (URSim) and converts
+them into RLDS format for training imitation-learning / VLA models.
+
+```
+Simulated UR5e (URSim) → Keyboard Teleoperation (LeRobot) → Recorded Episodes
+→ RLDS Dataset
+```
+
+## Status
+
+Core pipeline complete and validated end-to-end: simulated robot control, keyboard
+teleoperation with synchronized recording, dual synthetic camera views (rendered live
+from the robot's true pose via PyBullet), and a working LeRobot → RLDS conversion
+script with full validation.
+
+See `RLDS_Target_Schema.pdf` for the full data schema.
 
 ## Prerequisites
 
-Launch URSim with `-p 30004:30004` in addition to its existing VNC and web
-port mappings.
+- Docker
+- Python 3.10, `venv`
+- ROS Humble (`ros-humble-ur-description`, `ros-humble-xacro`) — used to generate the
+  UR5e 3D model for the synthetic camera renderer
 
-On Ubuntu, install the `venv` support package once if it is not already
-available:
-
-```bash
-sudo apt-get update
-sudo apt-get install -y python3.10-venv
-```
-
-## Setup and run
-
-From this directory, create and activate the virtual environment, install the
-only Python dependency, and run the test:
+## Setup
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-python -m pip install -r requirements.txt
+pip install -r requirements.txt
+```
+
+Launch URSim with all required ports (RTDE, Dashboard, and control ports — not just
+VNC/web):
+```bash
+docker run --rm -it \
+  -p 5900:5900 -p 6080:6080 -p 29999:29999 \
+  -p 30001-30003:30001-30003 -p 30004:30004 -p 30020:30020 \
+  -p 50001-50003:50001-50003 \
+  --name ursim universalrobots/ursim_e-series
+```
+
+In PolyScope (`http://localhost:6080/vnc.html?host=localhost&port=6080`): power on the
+robot and switch **Local → Remote** (top-right) before running any control script.
+
+**Note:** keyboard teleoperation requires an **X11** session (Wayland blocks the
+global keyboard capture this relies on). Check with `echo $XDG_SESSION_TYPE`.
+
+## Verify the RTDE connection
+
+```bash
 python src/rtde_test.py
 ```
 
-If the first command reports that `ensurepip` is unavailable and you cannot
-install the Ubuntu package, create a standard venv without its bundled pip and
-bootstrap pip into that venv from the system installation:
-
-```bash
-python3 -m venv --clear --without-pip venv
-python3 -m pip install --target venv/lib/python3.10/site-packages pip
-source venv/bin/activate
-python -m pip install -r requirements.txt
-python src/rtde_test.py
-```
-
-On success, the script prints the six joint positions in radians and the TCP
-pose as `[x, y, z, rx, ry, rz]` in metres and radians. When finished, leave the
-environment with:
-
-```bash
-deactivate
-```
-
-## Running the recorder (keyteleop)
-
-The `ur5e-record` console script included with the keyteleop integration must be
-run with a PYTHONPATH that prefers the actual package subfolders inside the
-repository. The keyteleop repo contains both an outer folder and an inner
-Python package folder that share similar names (for example,
-`lerobot_robot_ur5e/` and `lerobot_robot_ur5e/lerobot_robot_ur5e/`). If you add
-the repo root to `PYTHONPATH` (or run from the repo root) Python's import
-resolution can become ambiguous and cause imports to resolve to the outer
-folder rather than the package `__init__.py`, producing errors like
-`ImportError: cannot import name 'UR5eConfig' from 'lerobot_robot_ur5e' (unknown location)`.
-
-To avoid this, use the provided wrapper which sets `PYTHONPATH` to the
-inner-package folders and the `scripts` folder before calling the installed
-console script:
-
-```bash
-./scripts/run_ur5e_record.sh
-```
-
-This runs the same `ur5e-record` entrypoint but ensures imports resolve to the
-correct package files. If you prefer, you can replicate the same `PYTHONPATH`
-value manually; the wrapper is a convenience to make the command reproducible.
-
-Note (known-issue): a thin runner package that exposes a clean console-script
-entrypoint without requiring a manual PYTHONPATH would be a more robust long-
-term fix. This is logged as a TODO in the repository for future work.
-
-## Dependencies
-
-This repository does NOT vendor `third_party/lerobot_ur5e_keyteleop` because
-its upstream source does not have a clearly redistributable license.
-Install that dependency separately before running the recorder. From the
-project root, run:
+## Record demonstrations
 
 ```bash
 git clone https://github.com/scy-v/lerobot_ur5e_keyteleop.git third_party/lerobot_ur5e_keyteleop
-pip install -r third_party/lerobot_ur5e_keyteleop/requirements.txt
+# see custom_code/ for the modifications applied on top of this repo
+# (OpenCV + PyBullet camera backends, added to run_record.py / cfg.yaml)
+
+PYTHONPATH=third_party/_scripts_pathfix \
+PATH="venv/bin:$PATH" \
+venv/bin/ur5e-record
 ```
 
-If you prefer editable installs (recommended for development):
+Controls: `w/s`=x, `a/d`=y, `q/e`=z, `r/t g/f b/v`=rotation, `→`=end episode,
+`←`=re-record episode, **`Esc`=end session and save (never use Ctrl+C — it can
+discard the entire session)**.
+
+## Convert to RLDS
 
 ```bash
-pip install -e third_party/lerobot_ur5e_keyteleop/lerobot_robot_ur5e --no-deps
-pip install -e third_party/lerobot_ur5e_keyteleop/lerobot_teleoperator_ur5e --no-deps
+python rlds_conversion/convert_to_rlds.py <lerobot_dataset_path> <output_name>
+python rlds_conversion/validate_rlds.py
 ```
 
+## Repository structure
 
-test line
+```
+src/                    RTDE connection test
+custom_code/            Custom camera plugins + config modifications
+  pybullet_render_camera.py   LeRobot Camera plugin rendering live robot pose
+  run_record_MODIFIED.py      Recording script with OpenCV + PyBullet backends added
+  cfg.yaml                    Recording configuration
+rlds_conversion/        LeRobot → RLDS conversion + validation scripts
+RLDS_Target_Schema.pdf  Data schema documentation
+```
+
+## Known limitations
+
+- Camera views are synthetic (rendered from the robot's true joint state via
+  PyBullet), not from a physical camera mounted on the robot — see
+  `RLDS_Target_Schema.pdf` for the full explanation. Real webcam integration was also
+  built and tested (OpenCV backend) and can be re-enabled if needed.
+- `reward` is a placeholder (`0.0`) — this is a pure imitation-learning dataset, no
+  reward signal is computed.
