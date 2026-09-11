@@ -58,6 +58,22 @@ print(f"action: shape={first_step['action'].shape}, dtype={first_step['action'].
 print(f"is_first={first_step['is_first'].numpy()}, is_last={first_step['is_last'].numpy()}, "
       f"is_terminal={first_step['is_terminal'].numpy()}")
 
+# ---- Timestamp validation ----
+timestamps = np.array([s["timestamp"] for s in
+                        [step for step in next(iter(ds))["steps"]]])
+diffs = np.diff(timestamps)
+is_monotonic = np.all(diffs > 0)
+expected_interval = 1.0 / 30.0  # dataset recorded at 30 fps
+
+print("\n===== Timestamp Validation (Episode 1) =====")
+print(f"First timestamp: {timestamps[0]:.4f}s, Last timestamp: {timestamps[-1]:.4f}s")
+print(f"Monotonically increasing: {is_monotonic}")
+print(f"Mean interval between steps: {diffs.mean():.4f}s "
+      f"(expected ~{expected_interval:.4f}s at 30fps)")
+print(f"Min interval: {diffs.min():.4f}s, Max interval: {diffs.max():.4f}s")
+if not is_monotonic:
+    print("WARNING: timestamps are NOT strictly increasing — check recording/conversion for issues.")
+
 # ---- Visual summary of episode 1: action trajectory + sampled frames ----
 actions = np.array(first_episode_actions)  # shape (N, 6)
 n_frames = len(first_episode_frames_exterior)
