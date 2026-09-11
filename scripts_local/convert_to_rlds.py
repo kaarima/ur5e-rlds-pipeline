@@ -125,6 +125,8 @@ if __name__ == "__main__":
 
     lerobot_path = sys.argv[1]
     output_name = sys.argv[2]
-    data_dir = str(Path.home() / "rlds_datasets")
+    # Each output gets its own isolated folder, so different source datasets
+    # never collide or get silently skipped due to TFDS's caching.
+    data_dir = str(Path.home() / "rlds_datasets" / output_name)
 
     build_rlds_dataset(lerobot_path, output_name, data_dir)

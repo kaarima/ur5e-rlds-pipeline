@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use("Agg")  # no display needed, just saving files
 import matplotlib.pyplot as plt
 
-DATA_DIR = "/home/karima/rlds_datasets"
+DATA_DIR = "/home/karima/rlds_datasets/ur5e_pybullet_full"
 BUILDER_NAME = "u_r5e_rlds_builder"
 
 print(f"Loading dataset '{BUILDER_NAME}' from {DATA_DIR}...")
