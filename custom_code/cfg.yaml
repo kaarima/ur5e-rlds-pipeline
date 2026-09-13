@@ -1,3 +1,8 @@
+# This is a reference copy. On the actual deployment machine, this file lives at
+# third_party/lerobot_ur5e_keyteleop/scripts/config/cfg.yaml — the relative path
+# lookup in run_record.py (parents[1]/config/cfg.yaml) depends on that exact folder
+# structure, which is NOT reproduced in custom_code/.
+
 record:
   repo_id: &repo_id "scylearning/test_name"
   # repo_id: &repo_id "scylearning/pick_greencube_into_trashbin" 
@@ -68,12 +73,14 @@ record:
   cameras:
     enabled: True # use real camera(s) via OpenCV
     backend: "pybullet" # "pybullet" for dual rendered views, "opencv" for webcam+render, "realsense" for RealSense hardware
+    # NOTE: these two fields are only used when backend is 'opencv' or 'realsense'.
+    # They are ignored entirely when backend is 'pybullet' (the current setting).
     wrist_cam_serial: "0" # OpenCV device index (used as wrist camera for now — laptop webcam)
     exterior_cam_serial: "0" # OpenCV device index (same physical webcam, used for exterior slot too)
     width: 640 # camera and dummy-frame width; common values: 640, 424
     height: 480 # camera and dummy-frame height; common values: 480, 360, 240
     dummy_value: 0 # dummy RGB image intensity in [0, 255] (unused when enabled)
-    pybullet_urdf_path: "/home/karima/Documents/ur5e_rlds_project/third_party/ur5e_model/ur5e.urdf" # URDF for rendering wrist_image
+    pybullet_urdf_path: "REPLACE_WITH_YOUR_HOME/Documents/ur5e_rlds_project/third_party/ur5e_model/ur5e.urdf" # URDF for rendering wrist_image. Update this path to match your actual project location before running.
 
   storage:
     push_to_hub: False # whether to push the dataset to your huggingface repo after recording

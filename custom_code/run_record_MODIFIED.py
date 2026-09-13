@@ -1,3 +1,11 @@
+"""
+This is a reference copy. On the actual deployment machine, this file lives at
+third_party/lerobot_ur5e_keyteleop/scripts/core/run_record.py, with cfg.yaml as a
+sibling at third_party/lerobot_ur5e_keyteleop/scripts/config/cfg.yaml — the relative
+path lookup (parents[1]/config/cfg.yaml) depends on that exact folder structure,
+which is NOT reproduced in custom_code/.
+"""
+
 import yaml
 from pathlib import Path
 from typing import Dict, Any

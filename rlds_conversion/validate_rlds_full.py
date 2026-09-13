@@ -8,10 +8,12 @@ Full-dataset RLDS validation, covering every requirement in Section 3.10:
 - Trajectory <-> camera consistency: verifies images actually change when the
   robot moves (not a frozen/stuck camera), across every episode
 """
+from pathlib import Path
+
 import numpy as np
 import tensorflow_datasets as tfds
 
-DATA_DIR = "/home/karima/rlds_datasets/ur5e_pybullet_full"
+DATA_DIR = str(Path.home() / "rlds_datasets" / "ur5e_pybullet_full")
 BUILDER_NAME = "u_r5e_rlds_builder"
 
 print(f"Loading dataset '{BUILDER_NAME}' from {DATA_DIR}...")

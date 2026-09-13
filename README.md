@@ -32,6 +32,37 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Third-party dependencies setup
+
+The recording pipeline depends on LeRobot and a modified UR5e teleoperation package:
+
+```bash
+# Clone HuggingFace's lerobot repo and install it (CPU-only PyTorch for data collection)
+git clone https://github.com/huggingface/lerobot.git third_party/lerobot
+cd third_party/lerobot
+git checkout <pinned-commit-from-keyteleop-readme>  # Check the lerobot_ur5e_keyteleop README for the required commit
+pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision  # CPU-only PyTorch
+pip install -e .
+cd ../..
+
+# Clone the UR5e keyboard teleoperation package
+git clone https://github.com/scy-v/lerobot_ur5e_keyteleop.git third_party/lerobot_ur5e_keyteleop
+cd third_party/lerobot_ur5e_keyteleop
+pip install -e ./lerobot_robot_ur5e
+pip install -e ./lerobot_teleoperator_ur5e
+cd ../..
+
+# Copy the modified files from custom_code/ into their real locations
+cp custom_code/run_record_MODIFIED.py third_party/lerobot_ur5e_keyteleop/scripts/core/run_record.py
+cp custom_code/cfg.yaml third_party/lerobot_ur5e_keyteleop/scripts/config/cfg.yaml
+cp custom_code/pybullet_render_camera.py third_party/lerobot_ur5e_keyteleop/lerobot_robot_ur5e/cameras/pybullet_render_camera.py
+
+# Create the _scripts_pathfix symlink workaround (needed due to a Python namespace collision
+# between the lerobot_robot_ur5e package and lerobot's internal robot packages.
+# See the technical documentation for full detail on this issue.)
+ln -s third_party/lerobot_ur5e_keyteleop/scripts third_party/_scripts_pathfix
+```
+
 Launch URSim with all required ports (RTDE, Dashboard, and control ports — not just
 VNC/web):
 ```bash

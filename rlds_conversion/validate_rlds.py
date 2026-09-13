@@ -2,13 +2,15 @@
 Validates a generated RLDS dataset: loads it back, checks structure,
 and produces a visual summary of one episode.
 """
+from pathlib import Path
+
 import numpy as np
 import tensorflow_datasets as tfds
 import matplotlib
 matplotlib.use("Agg")  # no display needed, just saving files
 import matplotlib.pyplot as plt
 
-DATA_DIR = "/home/karima/rlds_datasets/ur5e_pybullet_full"
+DATA_DIR = str(Path.home() / "rlds_datasets" / "ur5e_pybullet_full")
 BUILDER_NAME = "u_r5e_rlds_builder"
 
 print(f"Loading dataset '{BUILDER_NAME}' from {DATA_DIR}...")
@@ -91,7 +93,7 @@ for col, idx in enumerate(sample_indices):
 axes[0, 0].set_ylabel("exterior_image", fontsize=10)
 axes[1, 0].set_ylabel("wrist_image", fontsize=10)
 plt.tight_layout()
-plt.savefig("/home/karima/rlds_episode1_frames.png", dpi=100)
+plt.savefig(str(Path.home() / "rlds_episode1_frames.png"), dpi=100)
 print("\nSaved frame sequence to ~/rlds_episode1_frames.png")
 
 fig2, ax = plt.subplots(figsize=(10, 5))
@@ -103,7 +105,7 @@ ax.set_ylabel("action value")
 ax.set_title("Episode 1 — Action trajectory")
 ax.legend()
 plt.tight_layout()
-plt.savefig("/home/karima/rlds_episode1_trajectory.png", dpi=100)
+plt.savefig(str(Path.home() / "rlds_episode1_trajectory.png"), dpi=100)
 print("Saved action trajectory plot to ~/rlds_episode1_trajectory.png")
 
 print("\n===== Validation complete =====")
